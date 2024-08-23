@@ -10,13 +10,15 @@ function M.setup_custom_layout()
   vim.cmd 'resize 15' -- Adjust the size as needed
   vim.cmd 'vsplit | terminal'
 
-  -- Move focus back to the main window
+  -- Move focus back to the file explorer
   vim.cmd 'wincmd k'
+  vim.cmd 'wincmd h'
+  -- Commenting this out for now. Just open 2nd editing window as needed
   -- Split into 2nd editing tab
-  vim.cmd 'vsplit'
+  --  vim.cmd 'vsplit'
 
   -- Move focus back to main window
-  vim.cmd 'wincmd h'
+  --  vim.cmd 'wincmd h'
 end
 
 -- Create a command to manually trigger the layout
