@@ -1,36 +1,32 @@
 local M = {}
 
 function M.setup_custom_layout()
-  -- Open file explorer (assuming you're using nvim-tree)
-  vim.cmd 'NvimTreeOpen'
-  vim.cmd 'wincmd l' -- Move focus to the main window
+  -- Delay the execution of NvimTreeOpen
+  vim.defer_fn(function()
+    vim.cmd('NvimTreeOpen')
+    vim.cmd('wincmd l')  -- Move focus to the main window
 
-  -- Open two terminal windows at the bottom
-  vim.cmd 'botright split | terminal'
-  vim.cmd 'resize 15' -- Adjust the size as needed
-  vim.cmd 'vsplit | terminal'
+    -- Open two terminal windows at the bottom
+    vim.cmd('botright split | terminal')
+    vim.cmd('resize 10')  -- Adjust the size as needed
+    vim.cmd('botright vsplit | terminal')
 
-  -- Move focus back to the file explorer
-  vim.cmd 'wincmd k'
-  vim.cmd 'wincmd h'
-  -- Commenting this out for now. Just open 2nd editing window as needed
-  -- Split into 2nd editing tab
-  --  vim.cmd 'vsplit'
-
-  -- Move focus back to main window
-  --  vim.cmd 'wincmd h'
+    -- Move focus back to the main window
+    vim.cmd('wincmd k')
+  end, 100)  -- 100ms delay, adjust if needed
 end
 
 -- Create a command to manually trigger the layout
 vim.api.nvim_create_user_command('SetupCustomLayout', M.setup_custom_layout, {})
 
 -- Autocommand to set up the layout on startup
-vim.api.nvim_create_autocmd('VimEnter', {
+vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     if vim.bo.buftype == '' then
       M.setup_custom_layout()
     end
   end,
+  nested = true,  -- Allow nested autocommands
 })
 
-return
+return M
