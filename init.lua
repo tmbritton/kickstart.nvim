@@ -1,4 +1,4 @@
---[[
+[[
 
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
@@ -1038,7 +1038,16 @@ require('lazy').setup({
   { 
     "pmizio/typescript-tools.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
-    opts = {},
+    opts = {
+      settings = {
+        -- Separate the diagnostics server to prevent blocking
+        separate_diagnostic_server = true,
+        -- Only publish diagnostics when you save or leave insert mode
+        publish_diagnostic_on = "insert_leave",
+        -- Increase memory limit if needed
+        tsserver_max_memory = "4096",
+      }
+    },
   },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
