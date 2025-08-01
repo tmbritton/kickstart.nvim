@@ -1,5 +1,152 @@
--- You can add your own plugins here or in other files in this directory!
---  I promise not to create any merge conflicts in this directory :)
---
--- See the kickstart.nvim README for more information
-return {}
+-- Custom plugins and plugin overrides
+return {
+  -- File tree plugin
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('nvim-tree').setup {
+        sort_by = 'case_sensitive',
+        view = {
+          width = 30,
+        },
+        renderer = {
+          group_empty = true,
+        },
+        filters = {
+          dotfiles = false,
+        },
+      }
+    end,
+  },
+
+  -- TypeScript tools
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    opts = {
+      settings = {
+        -- Separate the diagnostics server to prevent blocking
+        separate_diagnostic_server = true,
+        -- Only publish diagnostics when you save or leave insert mode
+        publish_diagnostic_on = 'insert_leave',
+        -- Increase memory limit if needed
+        tsserver_max_memory = '4096',
+      },
+    },
+  },
+
+  -- Override which-key configuration
+  {
+    'folke/which-key.nvim',
+    opts = {
+      spec = {
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>r', group = '[R]ename' },
+        { '<leader>s', group = '[S]earch' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>t', group = '[T]oggle' },
+        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+      },
+    },
+  },
+
+  -- Override telescope configuration
+  {
+    'nvim-telescope/telescope.nvim',
+    opts = {
+      defaults = {
+        hidden = true,
+        file_ignore_patterns = {
+          '^.git/',
+          '^.cache/',
+          '^node_modules/',
+        },
+      },
+      pickers = {
+        find_files = {
+          hidden = true,
+        },
+        live_grep = {
+          additional_args = function()
+            return { '--hidden' }
+          end,
+        },
+      },
+    },
+  },
+
+  -- Add mason-tool-installer override to ensure Go tools are installed
+  {
+    'WhoIsSethDaniel/mason-tool-installer.nvim',
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, {
+        'gopls',
+        'gofumpt',
+        'goimports',
+      })
+      return opts
+    end,
+  },
+
+  -- Add LSP servers
+  {
+    'neovim/nvim-lspconfig',
+    opts = function(_, opts)
+      opts.servers = opts.servers or {}
+      opts.servers.gopls = {}
+      return opts
+    end,
+  },
+
+  -- Override conform configuration for Go formatting
+  {
+    'stevearc/conform.nvim',
+    opts = {
+      formatters_by_ft = {
+        lua = { 'stylua' },
+        typescript = { 'prettier', 'prettierd', stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        go = { 'gofumpt', 'goimports' },
+      },
+    },
+  },
+
+  -- Override treesitter to include gleam
+  {
+    'nvim-treesitter/nvim-treesitter',
+    opts = {
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'gleam' },
+    },
+  },
+
+  -- Autocomplete braces
+  { 'windwp/nvim-autopairs', event = 'InsertEnter', opts = {} },
+
+  -- Git blame
+  {
+    'lewis6991/gitsigns.nvim',
+    opts = {
+      current_line_blame = true,
+      current_line_blame_opts = { delay = 300 },
+    },
+  },
+  -- Indent Guides
+  { 'lukas-reineke/indent-blankline.nvim', main = 'ibl', opts = {} },
+  -- Better Diagnostics
+  {
+    'folke/trouble.nvim',
+    opts = {},
+    cmd = 'Trouble',
+    keys = {
+      { '<leader>xx', '<cmd>Trouble diagnostics toggle<cr>', desc = 'Diagnostics (Trouble)' },
+      { '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<cr>', desc = 'Buffer Diagnostics (Trouble)' },
+    },
+  },
+}
