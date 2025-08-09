@@ -149,4 +149,12 @@ return {
       { '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<cr>', desc = 'Buffer Diagnostics (Trouble)' },
     },
   },
+  {
+    'saghen/blink.cmp',
+    opts = function(_, opts)
+      opts.keymap.preset = 'super-tab'
+      -- You could add more customizations here if needed
+      return opts
+    end,
+  },
 }
