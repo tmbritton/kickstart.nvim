@@ -153,7 +153,12 @@ return {
     'saghen/blink.cmp',
     opts = function(_, opts)
       opts.keymap.preset = 'super-tab'
-      -- You could add more customizations here if needed
+      -- Optional: Show documentation automatically after a short delay
+      opts.completion.documentation.auto_show = true
+      opts.completion.documentation.auto_show_delay_ms = 300
+
+      -- Optional: Enable ghost text (shows completion inline as you type)
+      opts.completion.ghost_text = { enabled = true }
       return opts
     end,
   },

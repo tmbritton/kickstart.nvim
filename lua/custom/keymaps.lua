@@ -11,3 +11,32 @@ vim.keymap.set('n', '<leader>df', vim.diagnostic.open_float, { desc = 'Show diag
 -- Keymaps for nvim-tree plugin
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { silent = true, noremap = true })
 vim.keymap.set('n', '<leader>fe', ':NvimTreeFocus<CR>', { silent = true, noremap = true })
+
+-- Show documentation in floating window
+vim.keymap.set('n', '<leader>dd', function()
+  if require('blink.cmp').is_visible() then
+    require('blink.cmp').show_documentation()
+  else
+    vim.lsp.buf.hover()
+  end
+end, { desc = '[D]isplay [D]ocumentation' })
+
+-- Close floating windows with esc key
+vim.keymap.set('n', '<Esc>', function()
+  -- First try to close blink.cmp documentation
+  if require('blink.cmp').is_visible() then
+    require('blink.cmp').hide()
+    return
+  end
+
+  -- Then try to close any floating windows
+  for _, win in pairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_config(win).relative ~= '' then
+      vim.api.nvim_win_close(win, false)
+      return
+    end
+  end
+
+  -- Default escape behavior
+  vim.cmd 'nohlsearch'
+end, { desc = 'Close floats or clear search' })
