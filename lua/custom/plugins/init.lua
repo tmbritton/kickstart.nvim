@@ -159,6 +159,28 @@ return {
 
       -- Optional: Enable ghost text (shows completion inline as you type)
       opts.completion.ghost_text = { enabled = true }
+
+      -- Disable completion in comments
+      opts.completion.trigger = {
+        blocked_trigger_characters = {},
+        show_in_snippet = true,
+        show_on_keyword = true,
+        show_on_trigger_character = true,
+        show_on_accept_on_trigger_character = true,
+        show_on_insert_on_trigger_character = true,
+        -- This is the key setting - disable in comments
+        show_in_context = function(ctx)
+          -- Get the current treesitter node
+          local node = vim.treesitter.get_node()
+          if not node then
+            return true
+          end
+
+          -- Check if we're in a comment
+          local node_type = node:type()
+          return not (node_type:match 'comment' or node_type:match 'Comment')
+        end,
+      }
       return opts
     end,
   },
