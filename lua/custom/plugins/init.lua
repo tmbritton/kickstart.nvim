@@ -162,7 +162,6 @@ return {
 
       -- Disable completion in comments
       opts.completion.trigger = {
-        blocked_trigger_characters = {},
         show_in_snippet = true,
         show_on_keyword = true,
         show_on_trigger_character = true,
