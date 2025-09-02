@@ -62,7 +62,13 @@ return {
         cmd = { 'templ', 'lsp' },
         filetypes = { 'templ' },
         root_dir = require('lspconfig.util').root_pattern('go.mod', '.git'),
-        settings = {},
+        settings = {
+          -- Make sure templ can find generated files
+          templ = {
+            -- Include generated files even if gitignored
+            includeGenerated = true,
+          },
+        },
         on_attach = function(client, bufnr)
           -- Optional: Enable formatting on save
           if client.supports_method 'textDocument/formatting' then
@@ -74,6 +80,20 @@ return {
             })
           end
         end,
+      }
+
+      -- Also set up gopls to work with templ generated files
+      require('lspconfig').gopls.setup {
+        settings = {
+          gopls = {
+            -- Make sure gopls can see generated templ files
+            directoryFilters = {
+              '-**/node_modules',
+              -- Don't exclude any Go files, even if gitignored
+            },
+            templateExtensions = { 'templ' },
+          },
+        },
       }
     end,
   },
