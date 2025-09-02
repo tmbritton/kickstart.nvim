@@ -40,6 +40,44 @@ return {
     },
   },
 
+  -- ADD THIS: Templ plugin for syntax highlighting
+  {
+    'joerdav/templ.vim',
+    ft = { 'templ' },
+  },
+
+  -- Manual templ LSP setup (since the opts override isn't working)
+  {
+    'neovim/nvim-lspconfig',
+    config = function()
+      -- Ensure templ filetype is properly detected
+      vim.filetype.add {
+        extension = {
+          templ = 'templ',
+        },
+      }
+
+      -- Set up templ LSP manually
+      require('lspconfig').templ.setup {
+        cmd = { 'templ', 'lsp' },
+        filetypes = { 'templ' },
+        root_dir = require('lspconfig.util').root_pattern('go.mod', '.git'),
+        settings = {},
+        on_attach = function(client, bufnr)
+          -- Optional: Enable formatting on save
+          if client.supports_method 'textDocument/formatting' then
+            vim.api.nvim_create_autocmd('BufWritePre', {
+              buffer = bufnr,
+              callback = function()
+                vim.lsp.buf.format { async = false }
+              end,
+            })
+          end
+        end,
+      }
+    end,
+  },
+
   -- Override which-key configuration
   {
     'folke/which-key.nvim',
@@ -90,17 +128,40 @@ return {
         'gopls',
         'gofumpt',
         'goimports',
+        'templ', -- ADD THIS: Install templ language server
       })
       return opts
     end,
   },
 
-  -- Add LSP servers
+  -- This LSP config may not work due to framework override - see manual setup above
   {
     'neovim/nvim-lspconfig',
     opts = function(_, opts)
       opts.servers = opts.servers or {}
       opts.servers.gopls = {}
+      -- This templ LSP config might be overridden - manual setup above should work
+      opts.servers.templ = {
+        cmd = { 'templ', 'lsp' },
+        filetypes = { 'templ' },
+        root_dir = function(fname)
+          return require('lspconfig.util').root_pattern('go.mod', '.git')(fname)
+        end,
+        settings = {
+          templ = {
+            diagnostics = {
+              unusedParameter = 'warning',
+              shadowedVariable = 'warning',
+            },
+          },
+        },
+        capabilities = vim.tbl_deep_extend('force', vim.lsp.protocol.make_client_capabilities(), {
+          textDocument = {
+            completion = { completionItem = { snippetSupport = true } },
+            publishDiagnostics = { tagSupport = { valueSet = { 2 } } },
+          },
+        }),
+      }
       return opts
     end,
   },
@@ -127,11 +188,26 @@ return {
     },
   },
 
-  -- Override treesitter to include gleam
+  -- Override treesitter to include templ and gleam
   {
     'nvim-treesitter/nvim-treesitter',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'gleam' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'gleam',
+        'go',
+        'templ', -- ADD templ and go here
+      },
     },
   },
 
