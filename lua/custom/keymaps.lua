@@ -13,13 +13,7 @@ vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { silent = true, noremap
 vim.keymap.set('n', '<leader>fe', ':NvimTreeFocus<CR>', { silent = true, noremap = true })
 
 -- Show documentation in floating window
-vim.keymap.set('n', '<leader>dd', function()
-  if require('blink.cmp').is_visible() then
-    require('blink.cmp').show_documentation()
-  else
-    vim.lsp.buf.hover()
-  end
-end, { desc = '[D]isplay [D]ocumentation' })
+vim.keymap.set('n', '<leader>dd', vim.lsp.buf.hover, { desc = '[D]isplay [D]ocumentation' })
 
 -- Close floating windows with esc key
 vim.keymap.set('n', '<Esc>', function()

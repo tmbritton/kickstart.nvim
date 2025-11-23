@@ -46,10 +46,10 @@ return {
     ft = { 'templ' },
   },
 
-  -- Manual templ LSP setup (since the opts override isn't working)
+  -- Configure templ filetype and override LSP settings
   {
     'neovim/nvim-lspconfig',
-    config = function()
+    opts = function(_, opts)
       -- Ensure templ filetype is properly detected
       vim.filetype.add {
         extension = {
@@ -57,44 +57,33 @@ return {
         },
       }
 
-      -- Set up templ LSP manually
-      require('lspconfig').templ.setup {
+      -- Configure servers via opts
+      opts.servers = opts.servers or {}
+
+      -- Configure templ LSP
+      opts.servers.templ = {
         cmd = { 'templ', 'lsp' },
         filetypes = { 'templ' },
         root_dir = require('lspconfig.util').root_pattern('go.mod', '.git'),
         settings = {
-          -- Make sure templ can find generated files
           templ = {
-            -- Include generated files even if gitignored
             includeGenerated = true,
           },
         },
-        on_attach = function(client, bufnr)
-          -- Optional: Enable formatting on save
-          if client.supports_method 'textDocument/formatting' then
-            vim.api.nvim_create_autocmd('BufWritePre', {
-              buffer = bufnr,
-              callback = function()
-                vim.lsp.buf.format { async = false }
-              end,
-            })
-          end
-        end,
       }
 
-      -- Also set up gopls to work with templ generated files
-      require('lspconfig').gopls.setup {
-        settings = {
-          gopls = {
-            -- Make sure gopls can see generated templ files
-            directoryFilters = {
-              '-**/node_modules',
-              -- Don't exclude any Go files, even if gitignored
-            },
-            templateExtensions = { 'templ' },
+      -- Override gopls settings to work with templ
+      opts.servers.gopls = opts.servers.gopls or {}
+      opts.servers.gopls.settings = {
+        gopls = {
+          directoryFilters = {
+            '-**/node_modules',
           },
+          templateExtensions = { 'templ' },
         },
       }
+
+      return opts
     end,
   },
 
@@ -154,37 +143,6 @@ return {
     end,
   },
 
-  -- This LSP config may not work due to framework override - see manual setup above
-  {
-    'neovim/nvim-lspconfig',
-    opts = function(_, opts)
-      opts.servers = opts.servers or {}
-      opts.servers.gopls = {}
-      -- This templ LSP config might be overridden - manual setup above should work
-      opts.servers.templ = {
-        cmd = { 'templ', 'lsp' },
-        filetypes = { 'templ' },
-        root_dir = function(fname)
-          return require('lspconfig.util').root_pattern('go.mod', '.git')(fname)
-        end,
-        settings = {
-          templ = {
-            diagnostics = {
-              unusedParameter = 'warning',
-              shadowedVariable = 'warning',
-            },
-          },
-        },
-        capabilities = vim.tbl_deep_extend('force', vim.lsp.protocol.make_client_capabilities(), {
-          textDocument = {
-            completion = { completionItem = { snippetSupport = true } },
-            publishDiagnostics = { tagSupport = { valueSet = { 2 } } },
-          },
-        }),
-      }
-      return opts
-    end,
-  },
 
   -- Override conform configuration for Go formatting
   {
@@ -211,6 +169,7 @@ return {
   -- Override treesitter to include templ and gleam
   {
     'nvim-treesitter/nvim-treesitter',
+    build = ':TSUpdate',
     opts = {
       ensure_installed = {
         'bash',
@@ -226,8 +185,11 @@ return {
         'vimdoc',
         'gleam',
         'go',
-        'templ', -- ADD templ and go here
+        'templ',
       },
+      auto_install = true,
+      highlight = { enable = true },
+      indent = { enable = true },
     },
   },
 
@@ -258,33 +220,11 @@ return {
     'saghen/blink.cmp',
     opts = function(_, opts)
       opts.keymap.preset = 'super-tab'
-      -- Optional: Show documentation automatically after a short delay
+      -- Show documentation automatically after a short delay
       opts.completion.documentation.auto_show = true
       opts.completion.documentation.auto_show_delay_ms = 300
-
-      -- Optional: Enable ghost text (shows completion inline as you type)
+      -- Enable ghost text (shows completion inline as you type)
       opts.completion.ghost_text = { enabled = true }
-
-      -- Disable completion in comments
-      opts.completion.trigger = {
-        show_in_snippet = true,
-        show_on_keyword = true,
-        show_on_trigger_character = true,
-        show_on_accept_on_trigger_character = true,
-        show_on_insert_on_trigger_character = true,
-        -- This is the key setting - disable in comments
-        show_in_context = function(ctx)
-          -- Get the current treesitter node
-          local node = vim.treesitter.get_node()
-          if not node then
-            return true
-          end
-
-          -- Check if we're in a comment
-          local node_type = node:type()
-          return not (node_type:match 'comment' or node_type:match 'Comment')
-        end,
-      }
       return opts
     end,
   },
